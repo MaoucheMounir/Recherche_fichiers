@@ -129,7 +129,7 @@ def ouvrir_txt(fichiers):
             subprocess.Popen(["notepad.exe", fichier])
 
 def ouvrir_pdf(fichiers):
-    chrome_path = "C:\Program Files\Google\Chrome\Application\chrome.exe" #Attention cette inst peut être source de bug
+    chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe" #Attention cette inst peut être source de bug
     for fichier in fichiers:
         subprocess.Popen([chrome_path, fichier])
 
@@ -137,7 +137,7 @@ def ouvrir_pdf(fichiers):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés")
     parser.add_argument("filetype", type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
-    parser.add_argument("search_path", type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec antislashs (case 8) et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
+    parser.add_argument("search_path", type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
     parser.add_argument('keywords', nargs='+', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
     args = parser.parse_args()
     
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     resultat = retrieve(fichiers, keywords)
     
     ## Ouvrir les fichiers
-    if ask_user_bin("Ouvrir les fichiers ? (y/n):\n"):
+    if len(resultat) > 0 and ask_user_bin("Ouvrir les fichiers ? (y/n):\n"):
         ouvrir(resultat)
 
 
