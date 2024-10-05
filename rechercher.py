@@ -3,10 +3,19 @@ import argparse
 import subprocess
 from collections import defaultdict
 
+from pdfminer.layout import LTTextBoxHorizontal
+from pdfminer.high_level import extract_pages
+
 global filetype 
 global supported_filetypes
 supported_filetypes = [".txt", ".pdf"]
 
+raccourcis = {'M1S2': r"C:\_Cours\_M1-S2", 
+              "M1S1": r"C:\_Cours\_M1-S1", 
+              "M2S1": r"C:\_Cours\__M2-S2",
+              "ML":   r"C:\_Cours\M1-S2\_ML",
+              "RITAL":r"C:\_Cours\_M1-S2\_RITAL",
+              "PIMA": r"C:\_Cours\M1-S2\_PIMA"}
 
 def explore(search_path, file_type=".txt"):
     """Fonction qui récupère les chemins des fichiers correspondant à l'extension et se trouvant dans search_path
@@ -43,6 +52,32 @@ def contains(content:str, query:str) -> bool:
     return query in content
     
 
+def get_content_txt(file):
+    with open(file, "r") as f:
+        content = f.read()
+    return content
+
+def get_content_pdf(file): 
+    """
+    file: le chemin du fichier
+    """
+
+    full_text = ""
+    with open(file, 'rb') as file:
+        for page_layout in extract_pages(file, page_numbers=[0]):
+            for element in page_layout:
+                if isinstance(element, LTTextBoxHorizontal):
+                    text = element.get_text().lower()
+                    full_text += text
+                    
+    return full_text
+
+def get_content(file):
+    if file.endswith(".txt"):
+        return get_content_txt(file)
+    elif file.endswith(".pdf"):
+        return get_content_pdf(file)
+
 def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
     """Parcourt les fichiers trouvés et retourne ceux qui contiennent au moins un des mots-clés
     Une recherche est définie par une liste de mots-clés à chercher dans la liste de fichiers.
@@ -68,10 +103,8 @@ def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
         
             pertinents_query = set() # set des fichiers de la requête actuelle
             for file in fichiers:
-                with open(file, "r") as f:
-                    content = f.read()
+                content = get_content(file)
                 if contains(content, query):
-                    
                     pertinents_query.update([file])
                     results_queries[query].append(file)
             
@@ -104,7 +137,7 @@ def verify_filetype():
 
 def verify_path():
     global search_path
-    value = search_path
+    value = raccourcis.get(search_path, search_path)
     
     while not (os.path.exists(value) or value == 'exit'):
         value = input(f"Chemin inexistant, réessayez ou quittez ('exit').")
