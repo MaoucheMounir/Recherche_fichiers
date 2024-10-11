@@ -8,12 +8,12 @@ from pdfminer.high_level import extract_pages
 
 global filetype 
 global supported_filetypes
-supported_filetypes = [".txt", ".pdf"]
+supported_filetypes = [".txt", ".pdf", ".md"]
 
 raccourcis = {'M1S2': r"C:\_Cours\_M1-S2", 
               "M1S1": r"C:\_Cours\_M1-S1", 
               "M2S1": r"C:\_Cours\__M2-S2",
-              "ML":   r"C:\_Cours\M1-S2\_ML",
+              "ML":   r"C:\_Cours\_M1-S2\_ML",
               "RITAL":r"C:\_Cours\_M1-S2\_RITAL",
               "PIMA": r"C:\_Cours\M1-S2\_PIMA"}
 
@@ -73,7 +73,8 @@ def get_content_pdf(file):
     return full_text
 
 def get_content(file):
-    if file.endswith(".txt"):
+    print(file)
+    if file.endswith(".txt") or file.endswith(".md"):
         return get_content_txt(file)
     elif file.endswith(".pdf"):
         return get_content_pdf(file)
@@ -166,6 +167,12 @@ def ouvrir_pdf(fichiers):
     for fichier in fichiers:
         subprocess.Popen([chrome_path, fichier])
 
+def ouvrir_md(fichiers):
+    code_path = r"C:\Microsoft VS Code\Code.exe" #Attention cette inst peut être source de bug
+    for fichier in fichiers:
+        subprocess.Popen([code_path, fichier])
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés")
@@ -191,3 +198,7 @@ if __name__ == "__main__":
         ouvrir(resultat)
 
 
+## Add
+# optional arguments better in terminal?
+# get content md files
+# prendre en compte nom du fichier, surtout quand on en a bcp (unlikely, il faudrait soit vectoriser, vaut pas le coup, soit list de mots et non)?
