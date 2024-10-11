@@ -167,6 +167,8 @@ def ouvrir(fichiers:dict):
         ouvrir_txt(fichiers)
     elif filetype == ".pdf":
         ouvrir_pdf(fichiers)
+    elif filetype == ".md":
+        ouvrir_md(fichiers)
 
 def ouvrir_txt(fichiers):
     for fichier in fichiers:
@@ -178,9 +180,10 @@ def ouvrir_pdf(fichiers):
         subprocess.Popen([chrome_path, fichier])
 
 def ouvrir_md(fichiers):
-    code_path = r"C:\Microsoft VS Code\Code.exe" #Attention cette inst peut être source de bug
+    code_path = r"C:\Microsoft VS Code\bin\Code.cmd" #J'aurais pu mettre \vscode\code.exe mais celle-là est mieux
     for fichier in fichiers:
-        subprocess.Popen([code_path, fichier])
+      subprocess.Popen([code_path, fichier]) # subprocess.run n'a pas fonctionné.
+
 
 ######################################
 
@@ -212,7 +215,7 @@ if __name__ == "__main__":
         print_info()
         exit()
     else:
-        if search_path=="C:/_Cours/_M1-S2" and filetype==".txt" and keywords==[]:
+        if search_path=="C:/_Cours/_M1-S2" and filetype==".txt" and keywords==[]: ## If the user didn't specify anything
             exit()
     
     ## Verifier les inputs
