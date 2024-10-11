@@ -2,6 +2,7 @@ import os
 import argparse
 import subprocess
 from collections import defaultdict
+from pprint import pp
 
 from pdfminer.layout import LTTextBoxHorizontal
 from pdfminer.high_level import extract_pages
@@ -15,7 +16,10 @@ raccourcis = {'M1S2': r"C:\_Cours\_M1-S2",
               "M2S1": r"C:\_Cours\__M2-S2",
               "ML":   r"C:\_Cours\_M1-S2\_ML",
               "RITAL":r"C:\_Cours\_M1-S2\_RITAL",
-              "PIMA": r"C:\_Cours\M1-S2\_PIMA"}
+              "PIMA": r"C:\_Cours\M1-S2\_PIMA",
+              "NOTES": r"C:\Users\mouni\OneDrive\Bureau\notes"}
+
+############################################################
 
 def explore(search_path, file_type=".txt"):
     """Fonction qui récupère les chemins des fichiers correspondant à l'extension et se trouvant dans search_path
@@ -37,48 +41,6 @@ def explore(search_path, file_type=".txt"):
     
     return fichiers_trouves
     
-    
-def contains(content:str, query:str) -> bool:
-    """Vérifie si le fichier contient le mot-clé
-
-    Args:
-        doc (str): le contenu (texte) du fichier
-        query (str): le mot-cl&
-    
-    Idées:
-        méthodes plus sophistiquées (vectorisation par ex)
-        séparer traitement fichier txt et fichier pdf
-    """
-    return query in content
-    
-
-def get_content_txt(file):
-    with open(file, "r") as f:
-        content = f.read()
-    return content
-
-def get_content_pdf(file): 
-    """
-    file: le chemin du fichier
-    """
-
-    full_text = ""
-    with open(file, 'rb') as file:
-        for page_layout in extract_pages(file, page_numbers=[0]):
-            for element in page_layout:
-                if isinstance(element, LTTextBoxHorizontal):
-                    text = element.get_text().lower()
-                    full_text += text
-                    
-    return full_text
-
-def get_content(file):
-    print(file)
-    if file.endswith(".txt") or file.endswith(".md"):
-        return get_content_txt(file)
-    elif file.endswith(".pdf"):
-        return get_content_pdf(file)
-
 def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
     """Parcourt les fichiers trouvés et retourne ceux qui contiennent au moins un des mots-clés
     Une recherche est définie par une liste de mots-clés à chercher dans la liste de fichiers.
@@ -111,15 +73,61 @@ def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
             
             all_pertinents.update(pertinents_query)
         
-        print(pertinents_query)
+        pp(pertinents_query)
         
         if redo:=ask_user_bin("Autre requête ? (y/n):\n"):
             keywords = input('Donnez un ou des mots-clé "mot1,mot2,...":\n').split(sep=',')
     
-    print(dict(results_queries))
+    pp(dict(results_queries))
     return all_pertinents
 
 
+#############################################################
+
+def contains(content:str, query:str) -> bool:
+    """Vérifie si le fichier contient le mot-clé
+
+    Args:
+        doc (str): le contenu (texte) du fichier
+        query (str): le mot-cl&
+    
+    Idées:
+        méthodes plus sophistiquées (vectorisation par ex)
+        séparer traitement fichier txt et fichier pdf
+    """
+    return query in content
+    
+
+#################################
+
+def get_content_txt(file):
+    with open(file, "r", encoding="utf-8") as f:
+        content = f.read()
+    return content
+
+def get_content_pdf(file): 
+    """
+    file: le chemin du fichier
+    """
+
+    full_text = ""
+    with open(file, 'rb') as file:
+        for page_layout in extract_pages(file, page_numbers=[0]):
+            for element in page_layout:
+                if isinstance(element, LTTextBoxHorizontal):
+                    text = element.get_text().lower()
+                    full_text += text
+                    
+    return full_text
+
+def get_content(file):
+    
+    if file.endswith(".txt") or file.endswith(".md"):
+        return get_content_txt(file)
+    elif file.endswith(".pdf"):
+        return get_content_pdf(file)
+
+####################################
 
 def verify_filetype():
     global filetype
@@ -151,6 +159,8 @@ def verify_path():
 def ask_user_bin(question, pos_rep="y"):
     return input(question) == pos_rep
 
+####################################
+
 def ouvrir(fichiers:dict):
     global filetype
     if filetype == ".txt":
@@ -172,18 +182,38 @@ def ouvrir_md(fichiers):
     for fichier in fichiers:
         subprocess.Popen([code_path, fichier])
 
+######################################
+
+def print_info():
+    global supported_filetypes
+    global raccourcis
+    
+    print("Types de fichiers supportés: ", *supported_filetypes)
+    print("Raccourcis:")
+    pp(raccourcis)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés")
-    parser.add_argument("filetype", type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
-    parser.add_argument("search_path", type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
-    parser.add_argument('keywords', nargs='+', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
+    parser.add_argument('-i', '--info', action='store_true', help="Affiche les types de fichiers supportés et les raccourcis")
+    parser.add_argument("filetype", nargs='?', type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
+    parser.add_argument("search_path",nargs='?' , type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
+    parser.add_argument('keywords', nargs='*', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
+    
+    
     args = parser.parse_args()
     
     filetype = args.filetype
     search_path = args.search_path
     keywords = args.keywords
+    info = args.info
+    
+    if args.info:
+        print_info()
+        exit()
+    else:
+        if search_path=="C:/_Cours/_M1-S2" and filetype==".txt" and keywords==[]:
+            exit()
     
     ## Verifier les inputs
     verify_filetype()
@@ -202,3 +232,4 @@ if __name__ == "__main__":
 # optional arguments better in terminal?
 # get content md files
 # prendre en compte nom du fichier, surtout quand on en a bcp (unlikely, il faudrait soit vectoriser, vaut pas le coup, soit list de mots et non)?
+# Ajouter en Comm le fait que si on a -i le prgrm quitte immédiatement, et que les raccourcis doivent être écris en majuscule
