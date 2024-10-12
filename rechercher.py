@@ -3,21 +3,17 @@ import argparse
 import subprocess
 from collections import defaultdict
 from pprint import pp
+import pickle
 
 from pdfminer.layout import LTTextBoxHorizontal
 from pdfminer.high_level import extract_pages
 
 global filetype 
 global supported_filetypes
+global raccourcis
 supported_filetypes = [".txt", ".pdf", ".md"]
 
-raccourcis = {'M1S2': r"C:\_Cours\_M1-S2", 
-              "M1S1": r"C:\_Cours\_M1-S1", 
-              "M2S1": r"C:\_Cours\__M2-S2",
-              "ML":   r"C:\_Cours\_M1-S2\_ML",
-              "RITAL":r"C:\_Cours\_M1-S2\_RITAL",
-              "PIMA": r"C:\_Cours\M1-S2\_PIMA",
-              "NOTES": r"C:\Users\mouni\OneDrive\Bureau\notes"}
+
 
 ############################################################
 
@@ -195,10 +191,40 @@ def print_info():
     print("Raccourcis:")
     pp(raccourcis)
 
+def add_raccourci(chemin, id):
+    global raccourcis
+    
+    raccourcis[id] = chemin
+    
+    store_raccourcis(raccourcis)
+    
+def supp_raccourci(id):
+    global raccourcis
+    del raccourcis[id]
+    
+    store_raccourcis(raccourcis)
+
+def store_raccourcis(raccourcis):
+    with open("raccourcis.pkl", "wb") as f:
+        pickle.dump(raccourcis, f)
+
+def load_raccourcis():
+    if os.path.exists("raccourcis.pkl"):
+        with open("raccourcis.pkl", "rb") as f:
+            raccourcis = pickle.load(f)
+    else:
+        raccourcis = {}
+        
+    return raccourcis
+
+#######################################
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés")
     parser.add_argument('-i', '--info', action='store_true', help="Affiche les types de fichiers supportés et les raccourcis")
+    parser.add_argument('-a', '--addrac', action='store_true', help="Ajouter un raccourci")
+    parser.add_argument('-s', '--supprac', action='store_true', help="Supprimer un raccourci")
     parser.add_argument("filetype", nargs='?', type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
     parser.add_argument("search_path",nargs='?' , type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
     parser.add_argument('keywords', nargs='*', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
@@ -209,7 +235,20 @@ if __name__ == "__main__":
     filetype = args.filetype
     search_path = args.search_path
     keywords = args.keywords
-    info = args.info
+    #info = args.info
+    
+    raccourcis = load_raccourcis()
+    
+    if args.addrac:
+        chemin = r'' + input("Donner un chemin:\n")
+        id = input('Donner un identifiant\n')
+        add_raccourci(chemin, id)
+        exit()
+
+    if args.supprac:
+        id = input('Donner un identifiant\n')
+        supp_raccourci(id)
+        exit()
     
     if args.info:
         print_info()
@@ -236,3 +275,5 @@ if __name__ == "__main__":
 # get content md files
 # prendre en compte nom du fichier, surtout quand on en a bcp (unlikely, il faudrait soit vectoriser, vaut pas le coup, soit list de mots et non)?
 # Ajouter en Comm le fait que si on a -i le prgrm quitte immédiatement, et que les raccourcis doivent être écris en majuscule
+# recherceh dans fichier python aussi
+# Ajouter une manière de sauvegarder des raccourcis personnalisés
