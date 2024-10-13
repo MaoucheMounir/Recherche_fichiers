@@ -4,6 +4,7 @@ import subprocess
 from collections import defaultdict
 from pprint import pp
 import pickle
+import json
 
 from pdfminer.layout import LTTextBoxHorizontal
 from pdfminer.high_level import extract_pages
@@ -11,7 +12,7 @@ from pdfminer.high_level import extract_pages
 global filetype 
 global supported_filetypes
 global raccourcis
-supported_filetypes = [".txt", ".pdf", ".md"]
+supported_filetypes = [".txt", ".pdf", ".md", ".py", ".ipynb"]
 
 
 
@@ -122,6 +123,16 @@ def get_content(file):
         return get_content_txt(file)
     elif file.endswith(".pdf"):
         return get_content_pdf(file)
+    elif file.endswith(".ipynb"):
+        return get_content_ipynb(file)
+    
+def get_content_ipynb(file):
+    with open(file, 'r', encoding='utf-8') as f:
+        content = json.load(f)
+    text = ""
+    for cell in content['cells']:
+        text += "".join(cell["source"])
+    return text
 
 ####################################
 
@@ -159,11 +170,13 @@ def ask_user_bin(question, pos_rep="y"):
 
 def ouvrir(fichiers:dict):
     global filetype
+    
     if filetype == ".txt":
         ouvrir_txt(fichiers)
     elif filetype == ".pdf":
         ouvrir_pdf(fichiers)
-    elif filetype == ".md":
+    elif filetype == ".md" or filetype == ".py" or filetype == ".ipynb":
+        
         ouvrir_md(fichiers)
 
 def ouvrir_txt(fichiers):
@@ -266,7 +279,7 @@ if __name__ == "__main__":
     resultat = retrieve(fichiers, keywords)
     
     ## Ouvrir les fichiers
-    if len(resultat) > 0 and ask_user_bin("Ouvrir les fichiers ? (y/n):\n"):
+    if len(resultat) > 0 and ask_user_bin("Ouvrir les fichiers ? (y/n/N°requete):\n"):
         ouvrir(resultat)
 
 
@@ -276,4 +289,5 @@ if __name__ == "__main__":
 # prendre en compte nom du fichier, surtout quand on en a bcp (unlikely, il faudrait soit vectoriser, vaut pas le coup, soit list de mots et non)?
 # Ajouter en Comm le fait que si on a -i le prgrm quitte immédiatement, et que les raccourcis doivent être écris en majuscule
 # recherceh dans fichier python aussi
-# Ajouter une manière de sauvegarder des raccourcis personnalisés
+# Ouvrir les fichiers selon le numero de requête (jpense il faut des classes)
+# Peut être sauvegarder l'emplacement où le mot-clé a été trouvé et proposer d'afficher une fenêtre autour (ptet un argument optionnel qui affiche la phrase dans laquelle se trouve le mot à la fin de la recherche)
