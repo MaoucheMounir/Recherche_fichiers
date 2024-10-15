@@ -66,7 +66,6 @@ def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
             for file in fichiers:
                 try:
                     content = get_content(file)
-                    
                 except Exception as e:
                     print(f'Exception {e}; fichier: {file}')
                     continue
@@ -85,7 +84,6 @@ def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
     pp(dict(results_queries))
     return all_pertinents
 
-
 #############################################################
 
 def contains(content:str, query:str) -> bool:
@@ -101,9 +99,17 @@ def contains(content:str, query:str) -> bool:
     """
     return query in content
     
-
 #################################
 
+def get_content(file):
+    
+    if file.endswith(".txt") or file.endswith(".md") or file.endswith(".py"):
+        return get_content_txt(file)
+    elif file.endswith(".pdf"):
+        return get_content_pdf(file)
+    elif file.endswith(".ipynb"):
+        return get_content_ipynb(file)
+    
 def get_content_txt(file):
     with open(file, "r", encoding="utf-8") as f:
         content = f.read()
@@ -124,17 +130,6 @@ def get_content_pdf(file):
                     
     return full_text
 
-def get_content(file):
-    
-    if file.endswith(".txt") or file.endswith(".md"):
-        return get_content_txt(file)
-    elif file.endswith(".pdf"):
-        return get_content_pdf(file)
-    elif file.endswith(".ipynb"):
-        return get_content_ipynb(file)
-    elif file.endswith(".py"):
-        return get_content_txt(file)
-    
 def get_content_ipynb(file):
     with open(file, 'r', encoding='utf-8') as f:
         content = json.load(f)
@@ -200,7 +195,6 @@ def ouvrir_md(fichiers):
     code_path = r"C:\Microsoft VS Code\bin\Code.cmd" #J'aurais pu mettre \vscode\code.exe mais celle-là est mieux
     for fichier in fichiers:
       subprocess.Popen([code_path, fichier]) # subprocess.run n'a pas fonctionné.
-
 
 ######################################
 
