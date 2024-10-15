@@ -1,10 +1,12 @@
 import os
-import argparse
 import subprocess
-from collections import defaultdict
-from pprint import pp
+import argparse
+
 import pickle
 import json
+from collections import defaultdict
+from pprint import pp
+from icecream import ic
 
 from pdfminer.layout import LTTextBoxHorizontal
 from pdfminer.high_level import extract_pages
@@ -12,9 +14,8 @@ from pdfminer.high_level import extract_pages
 global filetype 
 global supported_filetypes
 global raccourcis
+
 supported_filetypes = [".txt", ".pdf", ".md", ".py", ".ipynb"]
-
-
 
 ############################################################
 
@@ -63,7 +64,13 @@ def retrieve(fichiers:list[str], keywords:list[str]) -> set[str]:
         
             pertinents_query = set() # set des fichiers de la requête actuelle
             for file in fichiers:
-                content = get_content(file)
+                try:
+                    content = get_content(file)
+                    
+                except Exception as e:
+                    print(f'Exception {e}; fichier: {file}')
+                    continue
+                    
                 if contains(content, query):
                     pertinents_query.update([file])
                     results_queries[query].append(file)
@@ -125,6 +132,8 @@ def get_content(file):
         return get_content_pdf(file)
     elif file.endswith(".ipynb"):
         return get_content_ipynb(file)
+    elif file.endswith(".py"):
+        return get_content_txt(file)
     
 def get_content_ipynb(file):
     with open(file, 'r', encoding='utf-8') as f:
@@ -176,7 +185,6 @@ def ouvrir(fichiers:dict):
     elif filetype == ".pdf":
         ouvrir_pdf(fichiers)
     elif filetype == ".md" or filetype == ".py" or filetype == ".ipynb":
-        
         ouvrir_md(fichiers)
 
 def ouvrir_txt(fichiers):
