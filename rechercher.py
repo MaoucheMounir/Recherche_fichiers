@@ -1,19 +1,19 @@
 import os
-import subprocess
 import argparse
 
-import pickle
-import json
 from collections import defaultdict
 from pprint import pp
 from icecream import ic
 
-from pdfminer.layout import LTTextBoxHorizontal
-from pdfminer.high_level import extract_pages
+from content import *
 
 global filetype 
 global supported_filetypes
 global raccourcis
+
+# Je dois le mettre après les global car la fonction ouvrir utilise global filetype
+from ouvrir import *  
+from raccourcis import *
 
 supported_filetypes = [".txt", ".pdf", ".md", ".py", ".ipynb"]
 
@@ -99,45 +99,6 @@ def contains(content:str, query:str) -> bool:
     """
     return query in content
     
-#################################
-
-def get_content(file):
-    
-    if file.endswith(".txt") or file.endswith(".md") or file.endswith(".py"):
-        return get_content_txt(file)
-    elif file.endswith(".pdf"):
-        return get_content_pdf(file)
-    elif file.endswith(".ipynb"):
-        return get_content_ipynb(file)
-    
-def get_content_txt(file):
-    with open(file, "r", encoding="utf-8") as f:
-        content = f.read()
-    return content
-
-def get_content_pdf(file): 
-    """
-    file: le chemin du fichier
-    """
-
-    full_text = ""
-    with open(file, 'rb') as file:
-        for page_layout in extract_pages(file, page_numbers=[0]):
-            for element in page_layout:
-                if isinstance(element, LTTextBoxHorizontal):
-                    text = element.get_text().lower()
-                    full_text += text
-                    
-    return full_text
-
-def get_content_ipynb(file):
-    with open(file, 'r', encoding='utf-8') as f:
-        content = json.load(f)
-    text = ""
-    for cell in content['cells']:
-        text += "".join(cell["source"])
-    return text
-
 ####################################
 
 def verify_filetype():
@@ -170,34 +131,6 @@ def verify_path():
 def ask_user_bin(question, pos_rep="y"):
     return input(question) == pos_rep
 
-####################################
-
-def ouvrir(fichiers:dict):
-    global filetype
-    
-    if filetype == ".txt":
-        ouvrir_txt(fichiers)
-    elif filetype == ".pdf":
-        ouvrir_pdf(fichiers)
-    elif filetype == ".md" or filetype == ".py" or filetype == ".ipynb":
-        ouvrir_md(fichiers)
-
-def ouvrir_txt(fichiers):
-    for fichier in fichiers:
-            subprocess.Popen(["notepad.exe", fichier])
-
-def ouvrir_pdf(fichiers):
-    chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe" #Attention cette inst peut être source de bug
-    for fichier in fichiers:
-        subprocess.Popen([chrome_path, fichier])
-
-def ouvrir_md(fichiers):
-    code_path = r"C:\Microsoft VS Code\bin\Code.cmd" #J'aurais pu mettre \vscode\code.exe mais celle-là est mieux
-    for fichier in fichiers:
-      subprocess.Popen([code_path, fichier]) # subprocess.run n'a pas fonctionné.
-
-######################################
-
 def print_info():
     global supported_filetypes
     global raccourcis
@@ -205,32 +138,6 @@ def print_info():
     print("Types de fichiers supportés: ", *supported_filetypes)
     print("Raccourcis:")
     pp(raccourcis)
-
-def add_raccourci(chemin, id):
-    global raccourcis
-    
-    raccourcis[id] = chemin
-    
-    store_raccourcis(raccourcis)
-    
-def supp_raccourci(id):
-    global raccourcis
-    del raccourcis[id]
-    
-    store_raccourcis(raccourcis)
-
-def store_raccourcis(raccourcis):
-    with open("raccourcis.pkl", "wb") as f:
-        pickle.dump(raccourcis, f)
-
-def load_raccourcis():
-    if os.path.exists("raccourcis.pkl"):
-        with open("raccourcis.pkl", "rb") as f:
-            raccourcis = pickle.load(f)
-    else:
-        raccourcis = {}
-        
-    return raccourcis
 
 #######################################
 
@@ -240,17 +147,16 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--info', action='store_true', help="Affiche les types de fichiers supportés et les raccourcis")
     parser.add_argument('-a', '--addrac', action='store_true', help="Ajouter un raccourci")
     parser.add_argument('-s', '--supprac', action='store_true', help="Supprimer un raccourci")
-    parser.add_argument("filetype", nargs='?', type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
     parser.add_argument("search_path",nargs='?' , type=str, default="C:/_Cours/_M1-S2", help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
+    parser.add_argument("filetype", nargs='?', type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {supported_filetypes}.")
     parser.add_argument('keywords', nargs='*', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
     
     
     args = parser.parse_args()
     
-    filetype = args.filetype
     search_path = args.search_path
+    filetype = args.filetype
     keywords = args.keywords
-    #info = args.info
     
     raccourcis = load_raccourcis()
     
