@@ -1,18 +1,14 @@
 import os
 import pickle
 
-def add_raccourci(chemin, id):
-    global raccourcis
-    
+def add_raccourci(raccourcis, chemin, id):
     raccourcis[id] = chemin
-    
     store_raccourcis(raccourcis)
-    
-def supp_raccourci(id):
-    global raccourcis
+    return raccourcis
+def supp_raccourci(raccourcis, id):
     del raccourcis[id]
-    
     store_raccourcis(raccourcis)
+    return raccourcis
 
 def store_raccourcis(raccourcis):
     with open("raccourcis.pkl", "wb") as f:
