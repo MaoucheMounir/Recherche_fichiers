@@ -1,9 +1,9 @@
 import os
 import raccourcis as rc
+from ask_user import is_exit_response, NEGATIVE_OR_EXIT_RESPONSES
 from pprint import pp
 
-supported_filetypes = [".txt", ".pdf", ".md", ".py", ".ipynb"]
-
+SUPPORTED_FILETYPES = [".txt", ".pdf", ".md", ".py", ".ipynb"]
 
 class Config():
 
@@ -25,8 +25,6 @@ class Config():
         self.filetype:str = filetype
         self.keywords:list[str] = keywords
         
-        del self.fichiers, self.all_results
-    
     ################################
     
     def verify_filetype(self):
@@ -35,42 +33,36 @@ class Config():
         else:
             value = self.filetype
             
-        while value not in supported_filetypes+["exit"]:
-            value = input(f"Type de fichier non supporté. Choisissez parmi {supported_filetypes} sinon tapez 'exit'.")
+        while value not in SUPPORTED_FILETYPES+NEGATIVE_OR_EXIT_RESPONSES:
+            value = input(f"Type de fichier non supporté. Choisissez parmi {SUPPORTED_FILETYPES} sinon tapez 'exit'.")
         
-        if value == "exit":
-            exit()
-        else:
+        if not is_exit_response(value):
             self.filetype = value
+        else:
+            exit()
             
 
     def verify_path(self):
         value = self.raccourcis.get(self.search_path, self.search_path)
         
-        while not (os.path.exists(value) or value in self.raccourcis or value == 'exit'):
+        while not (os.path.exists(value) or value in self.raccourcis or is_exit_response(value)):
             value = input(f"Chemin inexistant. Réessayez ou quittez ('exit').")
             
-        if value == "exit":
-            exit()
-        else:
+        if not is_exit_response(value):
             self.search_path = self.raccourcis.get(value, value)
+        else:
+            exit()
             
-
-    def verify_default(self):
-        return not (self.search_path=="C:/_Cours/_M1-S2" and self.filetype==".txt" and self.keywords==[]) ## If the user didn't specify anything
-            
-        
         
     def verify_inputs(self):
-        self.verify_default()
         self.verify_filetype()
         self.verify_path()
     
     ###########################
     
     def print_info(self):
-        print("Types de fichiers supportés: ", *supported_filetypes)
-        print("Raccourcis:")
+        print("=> Types de fichiers supportés: ", *SUPPORTED_FILETYPES)
+        print("=> Raccourcis:")
         pp(self.raccourcis)
     
     ###############################

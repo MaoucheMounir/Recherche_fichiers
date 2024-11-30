@@ -2,7 +2,7 @@ from glob import glob
 from collections import defaultdict
 from pprint import pp
 from content import get_content
-from ask_user import ask_user_bin, MULTI_ENTRY_SEP
+from ask_user import ask_user_bin, get_keywords_from_user
 
 
 def detect_files(config):
@@ -67,7 +67,7 @@ def retrieve(config) -> set | defaultdict[str,list[str]]:
         pp(pertinents_query)
         
         if redo:=ask_user_bin("Autre requête ? (y/n):\n"):
-            config.keywords = input(f"Donnez un ou des mots-clé 'mot1{MULTI_ENTRY_SEP}mot2...':\n").split(sep=',')
+            config.keywords = get_keywords_from_user()
     
     pp(dict(results_queries))
     
