@@ -4,7 +4,7 @@ from pdfminer.high_level import extract_pages
 
 
 
-def get_content(file):
+def get_content(file:str) -> str:
     
     if file.endswith(".txt") or file.endswith(".md") or file.endswith(".py"):
         return get_content_txt(file)

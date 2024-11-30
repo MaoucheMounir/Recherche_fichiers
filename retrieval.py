@@ -1,12 +1,12 @@
-import os
+from glob import glob
 from collections import defaultdict
 from pprint import pp
 from content import get_content
+from ask_user import ask_user_bin, MULTI_ENTRY_SEP
 
-from ask_user import ask_user_bin
 
-def explore(config):
-    """Fonction qui récupère les chemins des fichiers correspondant à l'extension et se trouvant dans search_path
+def detect_files(config):
+    """Fonction qui détecte les fichiers du type spécifié dans config et retourne leurs chemins
 
     Args:
         search_path (str): Le chemin du répertoire de recherche
@@ -16,16 +16,18 @@ def explore(config):
         list[str]: La liste des chemins des fichiers valides
     """
     
-    fichiers_trouves = []
+    #fichiers_trouves = []
     
-    for root, _, files in os.walk(config.search_path):
-        for file in files:
-            if file.endswith(config.filetype):
-                fichiers_trouves.append(os.path.join(root, file))
+    # for root, _, files in os.walk(config.search_path):
+    #     for file in files:
+    #         if file.endswith(config.filetype):
+    #             fichiers_trouves.append(os.path.join(root, file))
+    
+    fichiers_trouves = glob(config.search_path+"/**/*"+config.filetype)
     
     config.fichiers = fichiers_trouves
     
-def retrieve(config):
+def retrieve(config) -> set | defaultdict[str,list[str]]:
     """Parcourt les fichiers trouvés et retourne ceux qui contiennent au moins un des mots-clés
     Une recherche est définie par une liste de mots-clés à chercher dans la liste de fichiers.
     Après chaque recherche, on affiche l'ensemble des fichiers contenant au moins un des mot-clés.
@@ -51,7 +53,7 @@ def retrieve(config):
             pertinents_query = set() # set des fichiers de la requête actuelle
             for file in config.fichiers:
                 try:
-                    content = get_content(file)
+                    content:str = get_content(file)
                 except Exception as e:
                     print(f'Exception {e}; fichier: {file}')
                     continue
@@ -65,11 +67,11 @@ def retrieve(config):
         pp(pertinents_query)
         
         if redo:=ask_user_bin("Autre requête ? (y/n):\n"):
-            config.keywords = input('Donnez un ou des mots-clé "mot1,mot2,...":\n').split(sep=',')
+            config.keywords = input(f"Donnez un ou des mots-clé 'mot1{MULTI_ENTRY_SEP}mot2...':\n").split(sep=',')
     
     pp(dict(results_queries))
     
-    config.all_results,  config.resultats_queries = all_pertinents, results_queries
+    config.all_results, config.resultats_queries = all_pertinents, results_queries
 
 #############################################################
 
@@ -78,7 +80,7 @@ def contains(content:str, query:str) -> bool:
 
     Args:
         doc (str): le contenu (texte) du fichier
-        query (str): le mot-cl&
+        query (str): le mot-clé
     
     Idées:
         méthodes plus sophistiquées (vectorisation par ex)
