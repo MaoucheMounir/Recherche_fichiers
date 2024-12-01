@@ -16,13 +16,6 @@ def detect_files(config):
         list[str]: La liste des chemins des fichiers valides
     """
     
-    #fichiers_trouves = []
-    
-    # for root, _, files in os.walk(config.search_path):
-    #     for file in files:
-    #         if file.endswith(config.filetype):
-    #             fichiers_trouves.append(os.path.join(root, file))
-    
     fichiers_trouves = glob(config.search_path+"/**/*"+config.filetype)
     
     config.fichiers = fichiers_trouves
@@ -45,12 +38,12 @@ def retrieve(config) -> set | defaultdict[str,list[str]]:
     results_queries = defaultdict(list) #dictionnaire contenant la liste des fichiers pour chaque query parmi toutes les recherches
     all_pertinents = set() # set des fichiers de toutes les recherches
     
-    redo = True
     
-    while redo:
+    while config.keywords:
+        pertinents_keywords = set() # set des fichiers de l'ensemble de mots-clé actuel
         for query in config.keywords:
         
-            pertinents_query = set() # set des fichiers de la requête actuelle
+            pertinents_query = set() # set des fichiers du mot-clé actuel
             for file in config.fichiers:
                 try:
                     content:str = get_content(file)
@@ -62,16 +55,17 @@ def retrieve(config) -> set | defaultdict[str,list[str]]:
                     pertinents_query.update([file])
                     results_queries[query].append(file)
             
+            pertinents_keywords.update(pertinents_query)
             all_pertinents.update(pertinents_query)
         
-        pp(pertinents_query)
+        pp(pertinents_keywords) 
         
-        if redo:=ask_user_bin("Autre requête ? (y/n):\n"):
-            config.keywords = get_keywords_from_user()
-    
+        config.keywords = get_keywords_from_user("Autres mots-clés ? (mots-clés pour chercher / entrée pour sortir)\n")
+        
     pp(dict(results_queries))
     
-    config.all_results, config.resultats_queries = all_pertinents, results_queries
+    config.all_results.update(all_pertinents)
+    config.resultats_queries.update(results_queries)
 
 #############################################################
 

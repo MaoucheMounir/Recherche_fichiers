@@ -1,5 +1,5 @@
 from enum import Enum
-from ask_user import get_arguments_from_user, ask_user_bin, ask_user_main_menu_task, is_exit_response
+from ask_user import get_arguments_from_user, ask_user_fichiers, ask_user_main_menu_task, is_exit_response
 from retrieval import retrieve, detect_files
 
 class MenuState(Enum):
@@ -12,8 +12,9 @@ class Menu():
     def __init__(self, parser, config):
         self.state = MenuState.RETRIEVAL
         self.run_state = {
-            MenuState.RETRIEVAL: self.run_retrieval_state(),
-            MenuState.MAIN_MENU: self.run_main_menu_state()
+            MenuState.RETRIEVAL: self.run_retrieval_state,
+            MenuState.MAIN_MENU: self.run_main_menu_state,
+            MenuState.EXIT: self.run_exit_state
         }
         
         self.parser = parser
@@ -24,8 +25,15 @@ class Menu():
         'i': self.config.print_info,
         'a': self.config.addrac,
         's': self.config.supprac,
+        'o': self.ouvrir_fichiers
         }
         
+    def ouvrir_fichiers(self):
+        if self.config.all_results:
+            ask_user_fichiers(self.config)
+        else:
+            print("aucun fichier à ouvrir")
+    
     
     def run_retrieval_state(self):
         user_arguments = get_arguments_from_user()
@@ -38,8 +46,8 @@ class Menu():
         detect_files(self.config)
         retrieve(self.config)
         
-        if not ask_user_bin("Voulez-vous effectuer une recherche ? (y/n)"):
-            return MenuState.MAIN_MENU
+        #if not ask_user_bin("Voulez-vous effectuer une recherche ? (y/n)"):
+        return MenuState.MAIN_MENU
     
     def run_main_menu_state(self):
         task = ask_user_main_menu_task()
@@ -54,10 +62,13 @@ class Menu():
                 action()
                 return MenuState.MAIN_MENU
             return MenuState.EXIT
-        
+    
+    def run_exit_state(self):
+        return None
+
     def run(self):
         while self.state:
-            self.state = self.run_state[self.state]
+            self.state = self.run_state[self.state]()
             # J'avais tenté self.state=self.state_actions[self.state]["next state"].get(new_state, None) avec niveaux -1, 0, 1
             
         
