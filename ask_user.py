@@ -1,4 +1,5 @@
 from ouvrir import ouvrir
+from pprint import pp
 
 MULTI_ENTRY_SEP = "," 
 NEGATIVE_OR_EXIT_RESPONSES = ["exit", "e", "n", ""]
@@ -12,24 +13,26 @@ def ask_user_bin(question, pos_rep="y"):
     return input(question) == pos_rep
 
 def ask_user_main_menu_task():
-    return input('\n=>Que voulez-vous faire ?\nr: recherche | i: info | a: addrac | s: supprac | h: help | e: exit\n') 
+    return input('\n=>Que voulez-vous faire ?\nr: recherche | i: info | h: help | o: ouvrir fichiers | a: addrac | s: supprac | e: exit\n') 
 
 def ask_user_fichiers(config):
-    reponse = input("Ouvrir les fichiers ? (y/n/N°requete(s)):\n")
+    pp(dict(config.resultats_queries))
+    reponse = input("Quels fichiers ouvrir ? (y: tous / N°requete(s) (1-indexation) / n: aucun):\n")
     if reponse.isalpha():
         
         if not is_exit_response(reponse):
             ouvrir(config.all_results, config.filetype)
         else:
-            exit()            
+            return           
     else :
         
         try:
-            # Séparer l'entrée si c'est une liste d'indices
-            indices = reponse.split(MULTI_ENTRY_SEP)  
-            # Convertir chaque élément en entier
-            indices = [int(i) for i in indices]
-        
+            # Séparer l'entrée si c'est une liste d'indices et  Convertir chaque élément en entier
+            indices = [int(indice.strip())-1 for indice in reponse.split(MULTI_ENTRY_SEP)]  
+            
+            if -1 in indices: # Verifier que les indices ne sont pas négatifs
+                indices = [i+1 for i in indices]
+            
             resultat_ouvrir = set()
             
             for i in indices:
@@ -46,10 +49,10 @@ def ask_user_fichiers(config):
 
 #################################################################
 
-def get_keywords_from_user():
-    keywords_input:list[str] = input(f"Mots-clés 'mot1{MULTI_ENTRY_SEP}mot2...' : \n")
-    keywords = [kw.strip() for kw in keywords_input.split(MULTI_ENTRY_SEP)]
-    return keywords
+def get_keywords_from_user(message=f"Mots-clés 'mot1{MULTI_ENTRY_SEP}mot2...' : \n"):
+    keywords_input:list[str] = input(message)
+    
+    return None if is_exit_response(keywords_input) else [kw.strip() for kw in keywords_input.split(MULTI_ENTRY_SEP)]
 
 def get_arguments_from_user():
     filetype = keywords = None

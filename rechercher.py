@@ -8,7 +8,7 @@ from ask_user import ask_user_fichiers
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés")
+    parser = argparse.ArgumentParser(description="Rechercher des fichiers à partir de mots-clés. Pour sortir d'un menu, il est possible d'appuyer simplement sur 'entrée'")
     parser.add_argument('-i', '--info', action='store_true', help="Affiche les types de fichiers supportés et les raccourcis")
     parser.add_argument('-a', '--addrac', action='store_true', help="Ajouter un raccourci")
     parser.add_argument('-s', '--supprac', action='store_true', help="Supprimer un raccourci")
@@ -21,10 +21,7 @@ if __name__ == "__main__":
     menu = Menu(parser, config)
     
     menu.run()
-        
-    ## Ouvrir les fichiers
-    if config.all_results: 
-        ask_user_fichiers(config)
+    
 
 
 ## Add
@@ -36,3 +33,4 @@ if __name__ == "__main__":
 # Ouvrir les fichiers selon le numero de requête (jpense il faut des classes)
 # Peut être sauvegarder l'emplacement où le mot-clé a été trouvé et proposer d'afficher une fenêtre autour (ptet un argument optionnel qui affiche la phrase dans laquelle se trouve le mot à la fin de la recherche)
 # Dans l'exécution avec le raccourci, mettre soit des commandes spéciales, soit un mot-clé qui emmene vers un menu des actions spéciales (aide, voir les raccourcis etc)
+# Verifier le cas de plusieurs recherche, entre si c'est demandé dans la fonction retrieve ou dans le menu principal

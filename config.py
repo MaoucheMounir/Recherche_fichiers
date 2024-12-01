@@ -14,8 +14,8 @@ class Config():
         self.raccourcis = rc.load_raccourcis()
         
         self.fichiers:list[str] = None
-        self.all_results:set[str] = None
-        self.resultats_queries:dict[str, list[str]] = None
+        self.all_results:set[str] = set()
+        self.resultats_queries:dict[str, list[str]] = dict()
     
     
     ################################
