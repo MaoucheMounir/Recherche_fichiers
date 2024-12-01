@@ -1,0 +1,3 @@
+main: jsp plus
+branch1: Fichiers principal divisé en imports (raccourcis, content, ouvrir)
+         avec comme problème le fait de devoir import avec des variables globales
