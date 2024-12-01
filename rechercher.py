@@ -15,17 +15,13 @@ if __name__ == "__main__":
     parser.add_argument("search_path",nargs='?' , type=str, help="Le chemin où effectuer la recherche\n Format: Avec slashs ou antislashs et avec ou sans cotes. Pour le redo, ecrire sans les cotes") #et si on a besoin des cotes dans le redo (path avec espace) ?
     parser.add_argument("filetype", nargs='?', type=str, default=".txt", help=f"Un type de fichier à rechercher. Peut-être {SUPPORTED_FILETYPES}.")
     parser.add_argument('keywords', nargs='*', type=str, help="Une liste de mots-clés à rechercher. Introduire des mots-clés séparés par des espaces") # Et comment on fait si on veut mettre des le debut des mots cles multitermes ?
-    
     #args = parser.parse_args()
     
     config = Config() 
     menu = Menu(parser, config)
-    running_state = "retrieval"
     
-    while running_state:
-        running_state = menu.set_state(running_state)
+    menu.run()
         
-    
     ## Ouvrir les fichiers
     if config.all_results: 
         ask_user_fichiers(config)
